@@ -1,0 +1,6 @@
+{
+  "name": "FoodieHub - Premium Food Ordering & Restaurant Marketplace",
+  "description": "Multi-role food delivery platform for customers, sellers, and administrators with real-time tracking, live orders, and rich marketplace menus.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

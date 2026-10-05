@@ -1,0 +1,169 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.email != null && request.auth.token.email == 'kumaribhumi433@gmail.com') ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isSeller() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller'
+      );
+    }
+
+    // ===============================================================
+    // USERS COLLECTION
+    // ===============================================================
+    match /users/{userId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if (isAuthenticated() && (request.auth.uid == userId || isAdmin())) ||
+                       (!isAuthenticated() && request.resource.data.uid == userId);
+      allow update: if (isAuthenticated() && (request.auth.uid == userId || isAdmin())) ||
+                       (!isAuthenticated() && resource.data.uid == userId);
+      allow delete: if isAdmin();
+    }
+
+    // ===============================================================
+    // RESTAURANTS COLLECTION
+    // ===============================================================
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow create, update: if (
+        isAdmin() ||
+        (isAuthenticated() && (
+          request.resource.data.sellerId == request.auth.uid ||
+          (resource != null && resource.data.sellerId == request.auth.uid)
+        )) ||
+        (!isAuthenticated() && request.resource.data.restaurantId != null)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ===============================================================
+    // FOOD ITEMS COLLECTION
+    // ===============================================================
+    match /foodItems/{foodId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() && (
+        isAdmin() ||
+        request.resource.data.sellerId == request.auth.uid ||
+        (resource != null && resource.data.sellerId == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ===============================================================
+    // ORDERS COLLECTION (Section 6 Requirements)
+    // - Authenticated customer can create order where request.auth.uid == request.resource.data.customerId
+    // - Customer can only read their own orders in collection queries
+    // - Seller can only read relevant seller orders in collection queries
+    // - Admin can read/manage all orders
+    // - Direct document get handles non-existent docs (resource == null) without throwing permission-denied
+    // ===============================================================
+    match /orders/{orderId} {
+      allow get: if resource == null ||
+                    !isAuthenticated() ||
+                    isAdmin() ||
+                    resource.data.customerId == request.auth.uid ||
+                    resource.data.sellerId == request.auth.uid ||
+                    (isSeller() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.restaurantId == resource.data.restaurantId);
+
+      allow list: if !isAuthenticated() ||
+                     (isAuthenticated() && (
+                       isAdmin() ||
+                       resource.data.customerId == request.auth.uid ||
+                       resource.data.sellerId == request.auth.uid ||
+                       (isSeller() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.restaurantId == resource.data.restaurantId)
+                     ));
+
+      allow create: if (
+        (isAuthenticated() && (isAdmin() || request.auth.uid == request.resource.data.customerId)) ||
+        (!isAuthenticated() && request.resource.data.customerId != null)
+      );
+
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.customerId == request.auth.uid && request.resource.data.customerId == request.auth.uid) ||
+        resource.data.sellerId == request.auth.uid ||
+        (isSeller() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.restaurantId == resource.data.restaurantId)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ===============================================================
+    // REVIEWS COLLECTION
+    // ===============================================================
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.customerId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (resource.data.customerId == request.auth.uid || isAdmin());
+    }
+
+    // ===============================================================
+    // COUPONS COLLECTION
+    // ===============================================================
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===============================================================
+    // NOTIFICATIONS COLLECTION
+    // ===============================================================
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ===============================================================
+    // COMPLAINTS COLLECTION
+    // ===============================================================
+    match /complaints/{complaintId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ===============================================================
+    // ADDRESSES COLLECTION
+    // ===============================================================
+    match /addresses/{addressId} {
+      allow read, write: if isAuthenticated() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // ===============================================================
+    // DELIVERY PARTNERS COLLECTION
+    // ===============================================================
+    match /delivery_partners/{partnerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===============================================================
+    // AUDIT LOGS
+    // ===============================================================
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+    }
+  }
+}

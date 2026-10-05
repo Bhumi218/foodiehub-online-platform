@@ -1,0 +1,164 @@
+{
+  "entities": {
+    "User": {
+      "collection": "users",
+      "fields": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "seller", "admin"] },
+        "photoURL": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "pending", "approved", "rejected", "suspended", "blocked"] },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Restaurant": {
+      "collection": "restaurants",
+      "fields": {
+        "restaurantId": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "name": { "type": "string" },
+        "logo": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "description": { "type": "string" },
+        "address": { "type": "string" },
+        "cuisine": { "type": "array" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "status": { "type": "string", "enum": ["open", "closed", "pending", "disabled"] },
+        "deliveryTime": { "type": "string" },
+        "minOrder": { "type": "number" },
+        "openingHours": { "type": "string" },
+        "phone": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "FoodItem": {
+      "collection": "foodItems",
+      "fields": {
+        "foodId": { "type": "string" },
+        "restaurantId": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "discountPrice": { "type": "number" },
+        "image": { "type": "string" },
+        "category": { "type": "string" },
+        "foodType": { "type": "string", "enum": ["veg", "non-veg"] },
+        "availability": { "type": "string", "enum": ["active", "inactive", "out_of_stock"] },
+        "isBestseller": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Order": {
+      "collection": "orders",
+      "fields": {
+        "orderId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "restaurantId": { "type": "string" },
+        "restaurantName": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "tax": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "discount": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["cod", "razorpay", "upi", "card", "netbanking"] },
+        "paymentStatus": { "type": "string", "enum": ["pending", "paid", "refunded", "failed"] },
+        "orderStatus": { "type": "string", "enum": ["Placed", "Confirmed", "Preparing", "Ready", "Out for Delivery", "Delivered", "Cancelled"] },
+        "address": { "type": "object" },
+        "statusHistory": { "type": "array" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "Review": {
+      "collection": "reviews",
+      "fields": {
+        "reviewId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "restaurantId": { "type": "string" },
+        "foodId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "isReported": { "type": "boolean" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Coupon": {
+      "collection": "coupons",
+      "fields": {
+        "couponId": { "type": "string" },
+        "code": { "type": "string" },
+        "discountType": { "type": "string", "enum": ["percentage", "fixed"] },
+        "discount": { "type": "number" },
+        "minOrder": { "type": "number" },
+        "maxDiscount": { "type": "number" },
+        "expiryDate": { "type": "string" },
+        "usageLimit": { "type": "number" },
+        "usedCount": { "type": "number" },
+        "active": { "type": "boolean" }
+      }
+    },
+    "Notification": {
+      "collection": "notifications",
+      "fields": {
+        "notificationId": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Complaint": {
+      "collection": "complaints",
+      "fields": {
+        "complaintId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userRole": { "type": "string" },
+        "orderId": { "type": "string" },
+        "subject": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "In Progress", "Resolved", "Closed"] },
+        "adminReply": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Address": {
+      "collection": "addresses",
+      "fields": {
+        "addressId": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "tag": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "pincode": { "type": "string" }
+      }
+    },
+    "AuditLog": {
+      "collection": "auditLogs",
+      "fields": {
+        "logId": { "type": "string" },
+        "adminUid": { "type": "string" },
+        "action": { "type": "string" },
+        "targetId": { "type": "string" },
+        "description": { "type": "string" },
+        "timestamp": { "type": "timestamp" }
+      }
+    }
+  }
+}
